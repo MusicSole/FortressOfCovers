@@ -31,9 +31,9 @@
       cursor: pointer;
     }
   </style>
-
 </head>
 <body>
+
   <h1>Fortress of Covers</h1>
   <p>Before The Story Is The Cover. Awarding The Best Covers Throughout History.</p>
 
@@ -46,7 +46,6 @@
 
     <label for="year">Year:</label>
     <select id="year">
-      <!-- 1961 to 1999 -->
       <script>
         for (let year = 1961; year <= 1999; year++) {
           document.write(`<option value="${year}">${year}</option>`);
@@ -73,204 +72,62 @@
 
   <button onclick="goToPage()">Activate</button>
 
-  <script>
-  function goToPage() {
-    const publisher = document.getElementById('publisher').value;
-    const year = document.getElementById('year').value;
-    const month = document.getElementById('month').value;
-
-    const formatted = `${publisher.toLowerCase()}_${month.toLowerCase()}_${year}`;
-    const url = `${formatted}.html`;
-
-    // TEMP: Only allow Marvel January 1982
-    if (formatted === "marvel_january_1982") {
-      window.location.href = url;
-    } else {
-      alert("That page isn’t available yet. Try Marvel January 1982!");
-    }
-  }
-</script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Fortress of Covers</title>
-  <link rel="stylesheet" href="/styles.css" />*
-</head>
-<body>
-  <h1>Artist Directory</h1>
+  <h2>Artist Directory</h2>
   <label for="artist-select"></label>
   <select id="artist-select">
     <option value="">-- Select an Artist --</option> 
   </select>
 
   <script>
-    // Sanitize artist names for safe filenames
-    function slugify(name) {
-      return name.trim().toLowerCase().replace(/[^a-z0-9]/gi, '_');
+    function goToPage() {
+      const publisher = document.getElementById('publisher').value;
+      const year = document.getElementById('year').value;
+      const month = document.getElementById('month').value;
+
+      const formatted = `${publisher.toLowerCase()}_${month.toLowerCase()}_${year}`;
+      const url = `${formatted}.html`;
+
+      if (formatted === "marvel_january_1982") {
+        window.location.href = url;
+      } else {
+        alert("That page isn’t available yet. Try Marvel January 1982!");
+      }
     }
 
-    fetch('/data/marvel_jan_1982.csv')
-      .then(response => response.text())
-      .then(csv => {
-        const rows = csv.split('\n').slice(1);
-        const artistSet = new Set();
+    async function loadArtists() {
+      const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vS9X8_M96iiWVsSNJdFBwsw1lZQSLPwVPYD9iFihyyWsckkl8NqBbBuDWzWjzdH2ph7jsU46J9GxN0R/pub?output=csv');
+      const text = await response.text();
+      const lines = text.trim().split('\n').slice(1); // skip header
+      const artists = new Set();
 
-        rows.forEach(row => {
-          const cols = row.split(',');
-          const artist = cols[3]?.trim();
-          if (artist) artistSet.add(artist);
-        });
-
-        const select = document.getElementById('artist-select');
-        Array.from(artistSet).sort().forEach(artist => {
-          const option = document.createElement('option');
-          option.value = `/artists/${slugify(artist)}.html`;
-          option.textContent = artist;
-          select.appendChild(option);
-        });
-
-        select.addEventListener('change', function () {
-          if (this.value) {
-            window.location.href = this.value;
+      lines.forEach(line => {
+        const columns = line.split(',');
+        if (columns.length >= 4) {
+          const artist = columns[3].trim();
+          if (artist && isNaN(artist)) {
+            artists.add(artist);
           }
-        });
+        }
       });
+
+      const dropdown = document.getElementById('artist-select');
+      Array.from(artists).sort().forEach(artist => {
+        const slug = artist.replace(/[^a-zA-Z0-9]/g, '_');
+        const option = document.createElement('option');
+        option.value = `artists/${slug}.html`;
+        option.textContent = artist;
+        dropdown.appendChild(option);
+      });
+
+      dropdown.addEventListener('change', function () {
+        if (this.value) {
+          window.location.href = this.value;
+        }
+      });
+    }
+
+    loadArtists();
   </script>
-  
-<script>
-  async function loadArtists() {
-    const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vS9X8_M96iiWVsSNJdFBwsw1lZQSLPwVPYD9iFihyyWsckkl8NqBbBuDWzWjzdH2ph7jsU46J9GxN0R/pub?output=csv');
-    const text = await response.text();
-
-    const lines = text.split('\n').slice(1); // Skip the first line (headers)
-    const artists = new Set();
-
-    llines.forEach(line => {
-  const columns = line.split(',');
-
-  // Check that column D exists (index 3), and it's a real name
-  if (columns.length > 3) {
-    const artist = columns[3].trim();
-
-    // Make sure it's not empty, not a number, not weird
-    if (artist && isNaN(artist) && artist.length > 1) {
-      artists.add(artist);
-    }
-  }
-});
-
-
-    const dropdown = document.getElementById('artist-select');
-
-    Array.from(artists).sort().forEach(artist => {
-      const slug = artist.replace(/[^a-zA-Z0-9]/g, '_'); // makes it safe for URLs
-      const option = document.createElement('option');
-      option.value = `/artists/${slug}.html`;
-      option.textContent = artist;
-      dropdown.appendChild(option);
-    });
-
-    dropdown.addEventListener('change', function () {
-      if (this.value) {
-        window.location.href = this.value;
-      }
-    });
-  }
-
-  loadArtists();
-</script>
-
-<script>
-  async function loadArtists() {
-    const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vS9X8_M96iiWVsSNJdFBwsw1lZQSLPwVPYD9iFihyyWsckkl8NqBbBuDWzWjzdH2ph7jsU46J9GxN0R/pub?output=csv');
-    const text = await response.text();
-
-    const lines = text.split('\n').slice(1); // Skip header
-    const artists = new Set();
-
-    lines.forEach(line => {
-      const columns = line.split(',');
-      if (columns.length >= 4) {
-        const artist = columns[3].trim();
-        if (artist && isNaN(artist)) {
-          artists.add(artist);
-        }
-      }
-    });
-
-    const dropdown = document.getElementById('artist-select');
-    while (dropdown.options.length > 1) {
-      dropdown.remove(1);
-    }
-
-    Array.from(artists).sort().forEach(artist => {
-      const option = document.createElement('option');
-      const slug = artist.replace(/[^a-zA-Z0-9]/g, '_');
-      option.value = `/artists/${slug}.html`;
-      option.textContent = artist;
-      dropdown.appendChild(option);
-    });
-
-    dropdown.addEventListener('change', function () {
-      if (this.value) {
-        window.location.href = this.value;
-      }
-    });
-  }
-
-  loadArtists();
-</script>
-
-<script>
-  async function loadArtists() {
-    const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vS9X8_M96iiWVsSNJdFBwsw1lZQSLPwVPYD9iFihyyWsckkl8NqBbBuDWzWjzdH2ph7jsU46J9GxN0R/pub?output=csv');
-    const text = await response.text();
-
-    const lines = text.trim().split('\n').slice(1); // Skip the header row
-    const artists = new Set();
-
-    lines.forEach(line => {
-      const columns = line.split(',');
-      if (columns.length >= 4) {
-        const artist = columns[3].trim();
-        if (artist && isNaN(artist)) {
-          artists.add(artist);
-        }
-      }
-    });
-
-    const dropdown = document.getElementById('artist-select');
-
-    Array.from(artists).sort().forEach(artist => {
-      const option = document.createElement('option');
-      const slug = artist.replace(/[^a-zA-Z0-9]/g, '_'); // Make safe filename
-      option.value = `artists/${slug}.html`; // RELATIVE link for GitHub Pages
-      option.textContent = artist;
-      dropdown.appendChild(option);
-    });
-
-    dropdown.addEventListener('change', function () {
-      if (this.value) {
-        const base = window.location.pathname.split('/').slice(0, -1).join('/');
-        window.location.href = `${base}/${this.value}`;
-      }
-    });
-  }
-
-  loadArtists();
-  dropdown.addEventListener('change', function () {
-  if (this.value) {
-    console.log('Going to:', this.value);   // <-- add this
-    window.location.href = this.value;      // keeps it simple
-  }
-});
-
-</script>
 
 </body>
 </html>
-
