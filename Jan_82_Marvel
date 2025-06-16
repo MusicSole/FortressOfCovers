@@ -1,1 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Marvel January 1982 – Fortress of Covers</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 40px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 0.2em;
+    }
+    p {
+      margin-bottom: 30px;
+    }
+    .cover-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .cover-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 220px;
+    }
+    .cover-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .meta {
+      text-align: left;
+      margin-top: 10px;
+      font-size: 0.9em;
+    }
+    .meta div {
+      margin-bottom: 4px;
+    }
+
+    .cover-card {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  width: 220px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cover-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.cover-card img {
+  border-radius: 4px;
+  transition: opacity 0.3s ease;
+}
+
+.cover-card:hover img {
+  opacity: 0.92;
+}
+
+  </style>
+</head>
+<body>
+
+  <h1>Marvel – January 1982</h1>
+  <p>Every Marvel comic cover from January 1982.</p>
+
+  <div class="cover-grid" id="coverGrid">Loading…</div>
+
+  <script>
+    async function loadCovers() {
+      const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS9X8_M96iiWVsSNJdFBwsw1lZQSLPwVPYD9iFihyyWsckkl8NqBbBuDWzWjzdH2ph7jsU46J9GxN0R/pub?output=csv";
+      const response = await fetch(csvUrl);
+      const text = await response.text();
+
+      const rows = text.trim().split('\n');
+      const headers = rows[0].split(',');
+
+      const coverGrid = document.getElementById('coverGrid');
+      coverGrid.innerHTML = ''; // Clear loading text
+
+      for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].split(',');
+        const row = {};
+        headers.forEach((header, index) => {
+          row[header.trim()] = cells[index]?.trim();
+        });
+
+        // Only show Marvel + January 1982
+        if (row.Publisher === 'Marvel' && row.Date === '1/1982') {
+          const card = document.createElement('div');
+          card.className = 'cover-card';
+
+          if (row['Image URL']) {
+            const img = document.createElement('img');
+            img.src = row['Image URL'];
+            img.alt = `${row.Title} #${row.Issue}`;
+            card.appendChild(img);
+          }
+
+          const meta = document.createElement('div');
+          meta.className = 'meta';
+          meta.innerHTML = `
+            <div><strong>Title:</strong> ${row.Title}</div>
+            <div><strong>Issue:</strong> ${row.Issue}</div>
+            <div><strong>Pencils:</strong> ${row.Pencils}</div>
+            <div><strong>Inker:</strong> ${row.Inker}</div>
+            <div><strong>Grade:</strong> ${row.Grade}</div>
+          `;
+          card.appendChild(meta);
+          coverGrid.appendChild(card);
+        }
+      }
+    }
+
+    loadCovers();
+  </script>
+
+</body>
+</html>
 
